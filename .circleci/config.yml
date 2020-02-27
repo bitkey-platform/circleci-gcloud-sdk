@@ -3,23 +3,18 @@ version: 2.0
 references:
   container_config: &container_config
     docker:
-      - image: google/cloud-sdk
+      - image: cimg/base:stable
     environment:
       DOCKERHUB_ORG_NAME: bitkeyplatform
       ORG_PATH: github.com/bitkey-platform
       REPO_PATH: "${ORG_PATH}/${CIRCLE_PROJECT_REPONAME}"
       BASH_ENV: .circleci/checktag.sh
       DOCKER_CLIENT_VER: 19.03.5
-      MICROBADGER_WEBHOOK_TOKEN: NEIXyYOhDV5xIfLIKFTDvu4ge_M=
-  install_docker_client: &install_docker_client
-    run:
-      name: Install docker client
-      command: |
-        set -x
-        VER="19.03.5"
-        curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
-        tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-        mv /tmp/docker/* /usr/local/bin
+      MICROBADGER_WEBHOOK_TOKEN: F3rEuZfEXxTW3LivoJs-JO0u1ys=
+  setup_remote_docker: &setup_remote_docker
+    setup_remote_docker:
+      version: 18.09.3
+      docker_layer_caching: true
   attach_workspace: &attach_workspace
     attach_workspace:
       at: ~/images
@@ -29,9 +24,7 @@ jobs:
     <<: *container_config
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 18.09.3
-      - *install_docker_client
+      - *setup_remote_docker
       - run:
           name: Build container images
           command: |
@@ -56,9 +49,7 @@ jobs:
     <<: *container_config
     steps:
       - *attach_workspace
-      - setup_remote_docker:
-          version: 18.09.3
-      - *install_docker_client
+      - *setup_remote_docker
       - run:
           name: Load Docker image from workspaces
           command: |
